@@ -168,7 +168,7 @@ class DistributedBloomModel(_FromPretrainedDefaultsMixin, BloomModel):
         assert attention_mask is None, "DistributedBloomModel does not support attention masks right now"
 
         for k, v in kwargs.items():
-            if not (v is None or v is False):
+            if v is not None and v is not False:
                 logger.debug(f"Extra keyword arguments are not yet supported (got {k} = {v})")
 
         if input_ids is not None and inputs_embeds is not None:
@@ -235,9 +235,7 @@ class DistributedBloomForCausalLM(_FromPretrainedDefaultsMixin, RemoteGeneration
         return self.transformer.word_embeddings
 
     def get_output_embeddings(self):
-        if self.config.tie_word_embeddings:
-            return None
-        return self.lm_head
+        return None if self.config.tie_word_embeddings else self.lm_head
 
     def set_input_embeddings(self, new_embeddings: nn.Embedding):
         assert isinstance(new_embeddings, nn.Embedding)
